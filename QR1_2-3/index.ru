@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Перенаправление...</title>
     
-    <meta http-equiv="refresh" content="0; url=ЗДЕСЬ_ВАША_РЕАЛЬНАЯ_ССЫЛКА">
+    <meta http-equiv="refresh" content="0; url=https://ru.wikipedia.org/wiki/Комиссия_для_рассмотрения_медиумических_явлений">
     
     <script>
-        window.location.href = "ЗДЕСЬ_ВАША_РЕАЛЬНАЯ_ССЫЛКА";
+        window.location.href = "https://ru.wikipedia.org/wiki/Комиссия_для_рассмотрения_медиумических_явлений";
     </script>
     
     <style>
@@ -19,6 +19,6 @@
 </head>
 <body>
     <p>Перенаправляем на материал...</p>
-    <p>Если ничего не произошло, <a href="ЗДЕСЬ_ВАША_РЕАЛЬНАЯ_ССЫЛКА">нажмите здесь</a>.</p>
+    <p>Если ничего не произошло, <a href="https://ru.wikipedia.org/wiki/Комиссия_для_рассмотрения_медиумических_явлений">нажмите здесь</a>.</p>
 </body>
 </html>
