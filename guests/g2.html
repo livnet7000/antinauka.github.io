@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квест: Академия ВРАЛ</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            background: #f4f7f6; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+        .container { 
+            max-width: 600px; 
+            width: 100%;
+            background: #fff; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+        h1 { color: #2c3e50; font-size: 1.5em; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
+        h2 { color: #2c3e50; font-size: 1.2em; text-align: center; margin-bottom: 20px; }
+        p { margin-bottom: 15px; }
+        
+        .section { display: none; animation: fadeIn 0.4s; }
+        .section.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn { 
+            display: block; 
+            width: 100%; 
+            background: #3498db; 
+            color: #fff; 
+            border: none; 
+            padding: 12px 15px; 
+            border-radius: 8px; 
+            font-size: 1em; 
+            cursor: pointer; 
+            transition: background 0.2s, transform 0.1s; 
+            margin-top: 15px;
+            text-align: center;
+            text-decoration: none;
+        }
+        .btn:hover { background: #2980b9; }
+        .btn:active { transform: scale(0.98); }
+        
+        .btn-science { background: #2ecc71; }
+        .btn-science:hover { background: #27ae60; }
+        .btn-vral { background: #e74c3c; }
+        .btn-vral:hover { background: #c0392b; }
+
+        .btn:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; }
+
+        .question-card {
+            background: #f9fbfd;
+            border: 1px solid #dcdde1;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-style: italic;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .feedback-box {
+            display: none;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            animation: fadeIn 0.3s;
+        }
+        .feedback-box.correct { background: #e8fdf0; border-left-color: #2ecc71; }
+        .feedback-box.incorrect { background: #fde8e8; border-left-color: #e74c3c; }
+
+        .feedback-title { font-weight: bold; margin-bottom: 5px; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .quiz-header-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .btn-nav {
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            color: #7f8c8d;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: 0.2s;
+        }
+        .btn-nav:hover {
+            background: #bdc3c7;
+            color: #2c3e50;
+        }
+        .btn-nav:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .back-link { display: inline-block; margin-top: 20px; color: #7f8c8d; text-decoration: underline; font-size: 0.9em; text-align: center; width: 100%; }
+        .back-link:hover { color: #3498db; }
+        
+        .score-display { text-align: center; font-size: 3em; font-weight: bold; color: #3498db; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Экран 1: Вступление -->
+    <div id="intro" class="section active">
+        <h1>Квест: Найди самозванца</h1>
+        <p>Иногда реальные научные факты звучат как полная фантастика, а антинаучный бред мошенников маскируется под строгую академическую теорию.</p>
+        <p>В этом квесте собраны 7 утверждений. Часть из них — доказанные <b>научные факты</b>. Другая часть — цитаты и концепции реальных людей, номинированных на антипремию <b>«Почетный академик ВРАЛ»</b> (Вруническая Академия Лженаук) за выдающийся вклад в мракобесие.</p>
+        <p>Сможете ли вы отличить сумасшедшую реальность от наукообразного бреда?</p>
+        <button class="btn" onclick="startQuest()">Начать проверку</button>
+        <a href="https://livnet.ru" class="back-link">Перейти на сайт livnet.ru</a>
+    </div>
+
+    <!-- Экран 2: Игровой процесс -->
+    <div id="quiz" class="section">
+        <div class="quiz-header-nav">
+            <button id="btn-prev" class="btn-nav" onclick="prevQuestion()">⬅ Предыдущий</button>
+            <button class="btn-nav" onclick="showIntro()">🏠 В начало</button>
+        </div>
+        <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+        <h2 id="question-counter">Утверждение 1 из 7</h2>
+        
+        <div id="question-text" class="question-card">
+            Текст вопроса будет здесь
+        </div>
+
+        <div id="buttons-container" style="display: flex; gap: 10px;">
+            <button id="btn-science" class="btn btn-science" onclick="checkAnswer(true)">Это Наука 🔬</button>
+            <button id="btn-vral" class="btn btn-vral" onclick="checkAnswer(false)">Это дичь (ВРАЛ) 🤡</button>
+        </div>
+
+        <div id="feedback" class="feedback-box">
+            <div id="feedback-title" class="feedback-title"></div>
+            <div id="feedback-text"></div>
+            <button class="btn" onclick="nextQuestion()" style="margin-top: 15px;">Далее</button>
+        </div>
+    </div>
+
+    <!-- Экран 3: Результаты -->
+    <div id="result" class="section">
+        <h1>Ваш результат</h1>
+        <div id="score" class="score-display">0/15</div>
+        <h2 id="result-title"></h2>
+        <p id="result-text"></p>
+        
+        <div style="background: #f9fbfd; border: 1px solid #dcdde1; padding: 15px; border-radius: 8px; margin-top: 20px;">
+            <p>Хотите узнать больше о том, как ученые борются с шарлатанами и кому досталась антипремия ВРАЛ?</p>
+            <p>Читайте подробности в <strong>Главе 2.9</strong> книги «Антинаука, как она есть».</p>
+        </div>
+
+        <button class="btn" onclick="restartQuest()" style="margin-top: 20px;">Пройти еще раз</button>
+        <a href="https://livnet.ru" class="back-link">Вернуться на главную livnet.ru</a>
+    </div>
+
+</div>
+
+<script>
+    // База вопросов (true = наука, false = ВРАЛ)
+    const questions = [
+        {
+            text: "«Генно-модифицированные организмы (ГМО) имеют внеземное происхождение. Технология была передана людям инопланетянами для уничтожения человечества».",
+            isScience: false,
+            explanation: "Это заявление <b>Ирины Ермаковой</b>, биолога и одного из самых активных борцов с ГМО в России, финалистки премии ВРАЛ. На самом деле генная инженерия — это строгая земная наука, спасающая миллионы людей от голода."
+        },
+        {
+            text: "«Время не абсолютно. Для объектов, движущихся с большой скоростью, время течет медленнее. А на вершине высокой горы время идет быстрее, чем на уровне моря».",
+            isScience: true,
+            explanation: "Звучит как магия, но это <b>доказанная физика</b> (Специальная и Общая теория относительности Эйнштейна). Системы GPS-навигации в наших телефонах постоянно учитывают эти искажения времени, иначе они бы сильно ошибались."
+        },
+        {
+            text: "«Лекарство можно разводить в воде до тех пор, пока в растворе не останется ни одной молекулы действующего вещества. Вода обладает 'памятью' и передаст лечебные свойства организму».",
+            isScience: false,
+            explanation: "Это классическая <b>гомеопатия</b> (и релиз-активные препараты). За это в том числе вручали антипремию Олегу Эпштейну. С точки зрения физики, химии и доказательной медицины у воды нет памяти, а лечение пустотой не работает."
+        },
+        {
+            text: "«В нашем теле бактериальных клеток примерно столько же, сколько и наших собственных, человеческих клеток».",
+            isScience: true,
+            explanation: "Это <b>научный факт</b>. Микробиом человека огромен. Мы — идущая экосистема. Долгое время считалось, что бактерий в нас в 10 раз больше, но современные исследования показали, что соотношение примерно 1:1."
+        },
+        {
+            text: "«История Древнего Рима и Греции выдумана в Средние века. Никакой античности не было, а Иисус Христос на самом деле родился в 1152 году в Крыму».",
+            isScience: false,
+            explanation: "Это «Новая хронология» академика <b>Анатолия Фоменко</b> (он математик, но полез в историю). Это одна из самых масштабных лженаучных теорий в России, полностью отвергаемая историками, археологами и лингвистами."
+        },
+        {
+            text: "«Все химические элементы в нашем теле, кроме водорода, были синтезированы в недрах звезд, которые взорвались миллиарды лет назад. Мы в буквальном смысле сделаны из звездной пыли».",
+            isScience: true,
+            explanation: "Это <b>астрофизический факт</b> (и знаменитая цитата Карла Сагана). Железо в нашей крови, кальций в костях и углерод в ДНК появились благодаря термоядерному синтезу в древних звездах."
+        },
+        {
+            text: "«Дырявый кишечник является главной причиной большинства современных болезней. Через микро-отверстия токсины и непереваренная пища проникают прямо в мозг».",
+            isScience: false,
+            explanation: "Это любимая пугалка <b>Натальи Зубаревой</b> (обладательницы антипремии ВРАЛ 2019 года), с помощью которой она продавала авторские БАДы. Синдрома «дырявого кишечника» не существует в официальной медицине."
+        },
+        {
+            text: "«Женщина передает генетические признаки своего первого полового партнера всем своим будущим детям, даже если они зачаты от другого мужчины».",
+            isScience: false,
+            explanation: "Это «телегония» — популярный антинаучный миф, за пропаганду которого номинировался <b>Петр Гаряев</b> (создатель «волновой генетики»). Наукой полностью доказано, что ребенок наследует гены только своих фактических биологических родителей."
+        },
+        {
+            text: "«Некоторые животные способны видеть магнитное поле Земли и используют его для навигации при миграциях на тысячи километров».",
+            isScience: true,
+            explanation: "Это <b>научный факт</b>. Магниторецепция доказана у многих видов птиц, рыб, черепах и некоторых млекопитающих. Они буквально чувствуют магнитные линии Земли с помощью специальных рецепторов."
+        },
+        {
+            text: "«Земля на самом деле плоская, а рек, текущих с юга на север, не существует, потому что вода не может течь вверх по шару».",
+            isScience: false,
+            explanation: "Подобные заявления активно пропагандирует музыкант <b>Юрий Лоза</b> (номинант премии ВРАЛ 2021). Разумеется, Земля имеет форму геоида, а реки текут от возвышенностей к низинам под действием гравитации, независимо от сторон света."
+        },
+        {
+            text: "«Одна и та же частица может находиться в двух разных состояниях одновременно, пока мы не проведем измерение».",
+            isScience: true,
+            explanation: "Это фундаментальный принцип <b>квантовой механики</b> (квантовая суперпозиция). Звучит как эзотерика, но именно на этом принципе работают квантовые компьютеры и современные лазеры."
+        },
+        {
+            text: "«Вакцины изменяют ДНК человека и превращают людей в трансгенных мутантов, которыми можно управлять через радиоволны».",
+            isScience: false,
+            explanation: "Это теория заговора, которую активно транслировал <b>Александр Редько</b> (лауреат антипремии ВРАЛ 2021). Ни одна вакцина не способна изменить геном человека, а управление мыслями через вышки связи нарушает базовые законы физики."
+        },
+        {
+            text: "«На Юпитере и Сатурне иногда идут дожди из алмазов. Молнии превращают метан в углерод, который падает и твердеет под огромным давлением».",
+            isScience: true,
+            explanation: "Это <b>астрофизическая гипотеза</b>, подтвержденная экспериментами и математическими моделями. В глубоких слоях атмосфер газовых гигантов действительно создаются условия для формирования кристаллических алмазов."
+        },
+        {
+            text: "«Причина всех онкологических заболеваний — это подавленные обиды и стресс. Рак можно вылечить, просто разобравшись со своими психологическими травмами без медикаментов».",
+            isScience: false,
+            explanation: "Это крайне опасная концепция так называемой «Новой германской медицины» (за продвижение подобного номинировалась психолог <b>Екатерина Сокальская</b>). Рак — это генетическая мутация клеток, требующая реального медицинского лечения."
+        },
+        {
+            text: "«У современных китов глубоко в теле есть рудиментарные кости задних ног, доставшиеся им от сухопутных предков».",
+            isScience: true,
+            explanation: "Это <b>научный факт</b>. Предки китов (например, пакицеты) жили на суше и имели четыре лапы. В процессе эволюции и перехода к водному образу жизни задние конечности исчезли, но их рудименты остались в скелете."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let userAnswers = [];
+
+    // Функция для случайного перемешивания массива (алгоритм Фишера-Йетса)
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function showIntro() {
+        showSection('intro');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startQuest() {
+        shuffleArray(questions); // Перемешиваем вопросы перед каждым новым запуском
+        currentQuestionIndex = 0;
+        userAnswers = new Array(questions.length).fill(0);
+        showQuestion();
+        showSection('quiz');
+    }
+
+    function showQuestion() {
+        // Обновляем UI под новый вопрос
+        const q = questions[currentQuestionIndex];
+        document.getElementById('question-counter').innerText = `Утверждение ${currentQuestionIndex + 1} из ${questions.length}`;
+        document.getElementById('question-text').innerHTML = `«${q.text.replace(/«|»/g, '')}»`;
+        
+        // Настройка кнопок навигации
+        document.getElementById('btn-prev').disabled = (currentQuestionIndex === 0);
+
+        // Сбрасываем кнопки и фидбек
+        document.getElementById('btn-science').disabled = false;
+        document.getElementById('btn-vral').disabled = false;
+        document.getElementById('feedback').style.display = 'none';
+        
+        // Обновляем прогресс-бар
+        const progressPercent = (currentQuestionIndex / questions.length) * 100;
+        document.getElementById('progress').style.width = progressPercent + '%';
+    }
+
+    function checkAnswer(userChoiceIsScience) {
+        // Блокируем кнопки
+        document.getElementById('btn-science').disabled = true;
+        document.getElementById('btn-vral').disabled = true;
+
+        const q = questions[currentQuestionIndex];
+        const isCorrect = (userChoiceIsScience === q.isScience);
+
+        // Сохраняем результат
+        userAnswers[currentQuestionIndex] = isCorrect ? 1 : 0;
+
+        // Показываем объяснение
+        const feedbackBox = document.getElementById('feedback');
+        const feedbackTitle = document.getElementById('feedback-title');
+        
+        feedbackBox.className = 'feedback-box ' + (isCorrect ? 'correct' : 'incorrect');
+        feedbackTitle.innerText = isCorrect ? 'Верно! ✅' : 'Ошибка! ❌';
+        document.getElementById('feedback-text').innerHTML = q.explanation;
+        
+        feedbackBox.style.display = 'block';
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion();
+        }
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        // Подсчет итогового результата
+        let score = userAnswers.reduce((a, b) => a + b, 0);
+
+        document.getElementById('progress').style.width = '100%';
+        document.getElementById('score').innerText = `${score} / ${questions.length}`;
+        
+        const titleEl = document.getElementById('result-title');
+        const textEl = document.getElementById('result-text');
+
+        if (score === questions.length) {
+            titleEl.innerText = "Почетный академик Здравого Смысла! 🎓";
+            textEl.innerHTML = "Блестящий результат! Ваш внутренний детектор лженауки работает на 100%. Вас невозможно обмануть наукообразными терминами и громкими заявлениями.";
+        } else if (score >= 10) {
+            titleEl.innerText = "Критический мыслитель 🕵️‍♂️";
+            textEl.innerHTML = "Хороший результат! Вы легко распознаете большинство шарлатанов, хотя иногда грань между безумной наукой и лженаукой действительно тонка.";
+        } else {
+            titleEl.innerText = "Осторожно, ловушки! ⚠️";
+            textEl.innerHTML = "Кажется, мошенникам удалось сбить вас с толку сложными словами. Не расстраивайтесь, для этого и существует проект «Антинаука» — чтобы научиться отличать настоящие знания от подделки.";
+        }
+
+        showSection('result');
+    }
+
+    function restartQuest() {
+        startQuest();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
