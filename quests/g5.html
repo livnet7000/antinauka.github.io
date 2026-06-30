@@ -54,7 +54,26 @@
         .btn:hover { background: #2980b9; }
         .btn:disabled { background: #bdc3c7; cursor: not-allowed; }
 
-        /* Инструкция и счетчик */
+        .menu-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 30px;
+            grid-template-columns: 1fr;
+        }
+        @media (min-width: 600px) {
+            .menu-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .menu-card {
+            background: #f9fbfd;
+            border: 1px solid #dcdde1;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
         .task-box {
             background: #f9fbfd;
             border-left: 4px solid #f39c12;
@@ -71,10 +90,10 @@
             border-radius: 12px;
             font-weight: bold;
             margin-left: 10px;
+            white-space: nowrap;
         }
         .counter-badge.full { background: #2ecc71; }
 
-        /* Контейнер для изображения и интерактивных зон */
         .image-container {
             position: relative;
             width: 100%;
@@ -88,51 +107,34 @@
         .image-container img {
             width: 100%;
             display: block;
-            pointer-events: none; /* Чтобы клики проходили к зонам */
+            pointer-events: none; 
         }
 
-        /* Интерактивные зоны поверх картинки */
+        /* Полностью невидимые интерактивные зоны */
         .hitbox {
             position: absolute;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px dashed rgba(255, 255, 255, 0.6);
+            background: transparent;
+            border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .hitbox:hover {
-            background: rgba(52, 152, 219, 0.4);
-            border-color: #3498db;
         }
         .hitbox.selected {
-            background: rgba(46, 204, 113, 0.6); /* Зеленый цвет брони */
+            background: rgba(46, 204, 113, 0.6); 
             border: 2px solid #2ecc71;
             box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
         }
+
+        /* Позиционирование зон (по разметке пользователя) */
+        [data-zone="cockpit"]       { top: 44%; left: 5%; width: 33%; height: 17%; }
+        [data-zone="engines-right"] { top: 54%; left: 27%; width: 30%; height: 18%; }
+        [data-zone="engines-left"]  { top: 34%; left: 8%; width: 25%; height: 13%; }
         
-        /* Текст внутри зон */
-        .hitbox span {
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: bold;
-            pointer-events: none;
-            text-shadow: 1px 1px 2px black;
-        }
+        /* Ложные зоны (сдвинуты на изрешеченные участки) */
+        [data-zone="wings"]         { top: 65%; left: 62%; width: 35%; height: 30%; }
+        [data-zone="fuselage"]      { top: 38%; left: 40%; width: 30%; height: 16%; }
+        [data-zone="tail"]          { top: 15%; left: 70%; width: 25%; height: 30%; }
 
-        /* Позиционирование зон (настроено под загруженную картинку plane5.png) */
-        #zone-cockpit { top: 50%; left: 10%; width: 20%; height: 12%; }
-        #zone-engines { top: 55%; left: 35%; width: 25%; height: 35%; }
-        #zone-wings   { top: 25%; left: 10%; width: 35%; height: 20%; }
-        #zone-fuselage{ top: 35%; left: 45%; width: 20%; height: 25%; }
-        #zone-tail    { top: 15%; left: 65%; width: 25%; height: 25%; }
-
-        /* Экраны результатов */
         .reveal-box {
             background: #e8f4fd;
             border-left: 4px solid #3498db;
@@ -144,7 +146,16 @@
         .reveal-box.fail { background: #fdf0f0; border-left-color: #e74c3c; }
         .reveal-box.success { background: #e8fdf0; border-left-color: #2ecc71; }
 
-        .back-link { display: inline-block; margin-top: 20px; color: #7f8c8d; text-decoration: underline; font-size: 0.9em; text-align: center; width: 100%; }
+        /* Стили для карточек второй части квеста */
+        .phrases-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        @media (max-width: 600px) { .phrases-grid { grid-template-columns: 1fr; } }
+        .phrase-card { background: #f9fbfd; border: 2px solid #dcdde1; padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 0.95em; line-height: 1.4; display: flex; align-items: center; }
+        .phrase-card:hover { border-color: #3498db; background: #f0f8ff; }
+        .phrase-card.selected { background: #e8f4fd; border-color: #3498db; box-shadow: 0 0 8px rgba(52, 152, 219, 0.3); }
+        .phrase-card.correct { background: #e8fdf0; border-color: #2ecc71; color: #1e8449; }
+        .phrase-card.incorrect { background: #fdf0f0; border-color: #e74c3c; color: #a93226; text-decoration: line-through; }
+
+        .back-link { display: inline-block; margin-top: 20px; color: #7f8c8d; text-decoration: underline; font-size: 0.9em; text-align: center; width: 100%; cursor: pointer; }
         .back-link:hover { color: #3498db; }
         
         @keyframes shake {
@@ -159,95 +170,189 @@
 
 <div class="container">
     
-    <div id="intro" class="section active">
+    <!-- ГЛАВНОЕ МЕНЮ КВЕСТА -->
+    <div id="menu" class="section active">
+        <h1>Квест: Ошибка выжившего</h1>
+        <p>Добро пожаловать! Этот квест состоит из двух независимых заданий, посвященных когнитивным искажениям и анализу данных. Вы можете проходить их в любом порядке.</p>
+        
+        <div class="menu-grid">
+            <div class="menu-card">
+                <div>
+                    <h3 style="margin-top: 0; color: #2c3e50;">Часть 1: Анализ самолета</h3>
+                    <p style="font-size: 0.9em; color: #7f8c8d;">Почувствуйте себя военным аналитиком ВВС. Изучите фотографию вернувшегося с задания бомбардировщика B-17 и распределите броню.</p>
+                </div>
+                <button class="btn" onclick="showSection('intro-plane')">Начать Часть 1</button>
+            </div>
+            
+            <div class="menu-card">
+                <div>
+                    <h3 style="margin-top: 0; color: #2c3e50;">Часть 2: Поиск искажений</h3>
+                    <p style="font-size: 0.9em; color: #7f8c8d;">Из базы 20 утверждений нейросеть выдаст вам случайные 10. Найдите среди них примеры «ошибки выжившего».</p>
+                </div>
+                <button class="btn" style="background: #27ae60;" onclick="startPart2()">Начать Часть 2</button>
+            </div>
+        </div>
+        
+        <a href="https://livnet.ru" class="back-link">Вернуться на сайт livnet.ru</a>
+    </div>
+
+    <!-- ЧАСТЬ 1: ВСТУПЛЕНИЕ (САМОЛЕТЫ) -->
+    <div id="intro-plane" class="section">
         <h1>Секретный отдел статистики</h1>
         <p>Идет Вторая мировая война. Вы — аналитик, работающий в центре ВВС. Командование поставило критическую задачу: <strong>снизить потери бомбардировщиков B-17</strong>.</p>
         <p>Перед вами на фото бомбардировщик «Heavenly Body», только что вернувшийся с боевого вылета на аэродром. Весь его фюзеляж, хвост и крылья изрешечены пулями и осколками зенитных снарядов.</p>
         <p>Генералы требуют укрепить самолеты броней. Но броня тяжелая: если забронировать весь самолет, он не взлетит. У вас есть ресурсы, чтобы укрепить только часть машины.</p>
-        <button class="btn" onclick="showSection('game')">Перейти к анализу повреждений</button>
-        <a href="https://livnet.ru" class="back-link">Вернуться на главную livnet.ru</a>
+        <button class="btn" onclick="showSection('game1')">Перейти к анализу повреждений</button>
+        <a class="back-link" onclick="returnToStart()">В главное меню квеста</a>
     </div>
 
-    <div id="game" class="section">
-        
+    <!-- ЧАСТЬ 1: ИГРА -->
+    <div id="game1" class="section">
         <div class="task-box">
-            Кликните прямо по фото и выберите <strong>ровно 2 зоны</strong>, которые нужно укрепить броней в первую очередь.
-            <span id="zone-counter" class="counter-badge">Выбрано: 0/2</span>
+            Кликните прямо по частям самолета на фото и выберите <strong>ровно 3 зоны</strong>, которые нужно укрепить броней.
+            <span id="zone-counter" class="counter-badge">Выбрано: 0/3</span>
         </div>
 
         <div class="image-container">
             <img src="plane5.png" alt="B-17 Bomber on Airfield">
-            
-            <div id="zone-cockpit" class="hitbox" onclick="toggleZone('cockpit')"><span>Кабина</span></div>
-            <div id="zone-engines" class="hitbox" onclick="toggleZone('engines')"><span>Двигатели</span></div>
-            <div id="zone-wings" class="hitbox" onclick="toggleZone('wings')"><span>Крыло</span></div>
-            <div id="zone-fuselage" class="hitbox" onclick="toggleZone('fuselage')"><span>Фюзеляж</span></div>
-            <div id="zone-tail" class="hitbox" onclick="toggleZone('tail')"><span>Хвост</span></div>
+            <div data-zone="cockpit" class="hitbox" onclick="toggleZone('cockpit')"></div>
+            <div data-zone="engines-right" class="hitbox" onclick="toggleZone('engines-right')"></div>
+            <div data-zone="engines-left" class="hitbox" onclick="toggleZone('engines-left')"></div>
+            <div data-zone="wings" class="hitbox" onclick="toggleZone('wings')"></div>
+            <div data-zone="fuselage" class="hitbox" onclick="toggleZone('fuselage')"></div>
+            <div data-zone="tail" class="hitbox" onclick="toggleZone('tail')"></div>
         </div>
 
-        <button id="btn-submit" class="btn" disabled onclick="checkAnswer()">Утвердить чертеж бронирования</button>
-        <button class="btn" style="background: #ecf0f1; color: #7f8c8d; margin-top: 10px;" onclick="returnToStart()">Сбросить и начать заново</button>
+        <button id="btn-submit1" class="btn" disabled onclick="checkAnswer1()">Утвердить чертеж бронирования</button>
+        <a class="back-link" onclick="returnToStart()">Вернуться в главное меню</a>
     </div>
 
-    <div id="reveal" class="section">
-        <h1 id="reveal-title"></h1>
-        <div id="reveal-content" class="reveal-box"></div>
+    <!-- ЧАСТЬ 1: РАЗОБЛАЧЕНИЕ -->
+    <div id="reveal1" class="section">
+        <h1 id="reveal1-title"></h1>
+        <div id="reveal1-content" class="reveal-box"></div>
 
         <div style="margin-top: 20px; background: #fdfbf7; padding: 15px; border-radius: 8px; border: 1px solid #dcdde1;">
             <p>Этот реальный исторический случай дал название термину <strong>«Ошибка выжившего»</strong>. Мы склонны делать выводы только по тем данным, которые нам доступны («выжившим»), забывая о тех, кто не дошел до финиша.</p>
-            <p>В мире псевдонауки это работает безотказно:</p>
-            <ul>
-                <li><strong>«Мой дед пил керосин и дожил до 90 лет»</strong> — ошибка выжившего. Мы не видим миллионы людей, которые от этого умерли, они не могут написать комментарий.</li>
-                <li><strong>«Раньше рожали в поле и были здоровее»</strong> — ошибка выжившего. Мы смотрим на здоровых предков, забывая о колоссальной младенческой смертности тех лет.</li>
-                <li><strong>«Этот экстрасенс исцелил меня!»</strong> — ошибка выжившего. 99% его клиентов не получили результата, поэтому вы видите восторженные отзывы только того 1%, у кого случилась спонтанная ремиссия.</li>
-            </ul>
         </div>
         
-        <p style="margin-top: 20px; text-align: center;">Подробный разбор того, как статистика обманывает наш мозг, читайте в книге <strong>«Антинаука, как она есть»</strong>.</p>
+        <button class="btn" style="background: #27ae60; margin-top: 20px;" onclick="returnToStart()">Завершить анализ и выйти в меню</button>
+    </div>
+
+    <!-- ЧАСТЬ 2: ИГРА -->
+    <div id="game2" class="section">
+        <h1 style="color: #27ae60;">Искажения в жизни</h1>
+        <div class="task-box" style="border-left-color: #27ae60;">
+            Перед вами <strong>10 случайных утверждений</strong> (выбраны из базы в 20 шт).<br>
+            Вам нужно найти <strong>ВСЕ</strong> фразы, иллюстрирующие «Ошибку выжившего». Точное их количество неизвестно — опирайтесь только на логику!
+            <div style="margin-top: 10px;"><span id="phrase-counter" class="counter-badge" style="background: #27ae60; margin-left: 0;">Выбрано: 0</span></div>
+        </div>
         
-        <button class="btn" style="background: #2c3e50;" onclick="returnToStart()">Пройти квест еще раз</button>
-        <a href="https://livnet.ru" class="back-link">Вернуться на сайт livnet.ru</a>
+        <div id="phrases-grid" class="phrases-grid">
+            <!-- Фразы генерируются JS -->
+        </div>
+
+        <button id="btn-submit2" class="btn" style="background: #27ae60;" disabled onclick="checkPart2()">Проверить выбранные ответы</button>
+        <a class="back-link" onclick="returnToStart()">Вернуться в главное меню</a>
+        
+        <!-- Результаты Части 2 (изначально скрыты) -->
+        <div id="reveal2" style="display: none; margin-top: 30px;">
+            <h1 id="reveal2-title"></h1>
+            <div id="reveal2-content" class="reveal-box"></div>
+            
+            <p style="margin-top: 20px; text-align: center;">Подробный разбор того, как статистика обманывает наш мозг, читайте в книге <strong>«Антинаука, как она есть»</strong>.</p>
+            
+            <button class="btn" style="background: #2c3e50;" onclick="returnToStart()">Выйти в главное меню</button>
+        </div>
     </div>
 
 </div>
 
 <script>
+    // ПЕРЕМЕННЫЕ
     let selectedZones = [];
+    let selectedPhrases = [];
+    let currentPhrases = [];
+
+    // БАЗА ФРАЗ (20 штук: 6 правильных, 14 неправильных)
+    const phrasesData = [
+        // 6 фраз "Ошибки выжившего"
+        { id: 1, text: "«Мой дед каждый день пил самогон и дожил до 90 лет, значит алкоголь не так уж вреден!»", isSurvivorship: true },
+        { id: 2, text: "«В старину женщины в поле рожали без всяких врачей, и все дети были здоровы!»", isSurvivorship: true },
+        { id: 3, text: "«Билл Гейтс и Стив Джобс бросили университет и стали миллиардерами. Высшее образование только мешает.»", isSurvivorship: true },
+        { id: 4, text: "«Дельфины — добрейшие спасатели. Известно много случаев, когда они толкали утопающих людей к берегу.»", isSurvivorship: true },
+        { id: 5, text: "«Раньше строили на века! Посмотрите на древние замки — стоят до сих пор, не то что современные дома.»", isSurvivorship: true },
+        { id: 6, text: "«Я уволился с работы, открыл бизнес и стал миллионером! Просто слушайте свое сердце, и у вас всё получится.»", isSurvivorship: true },
+        
+        // 14 фраз других когнитивных искажений
+        { id: 7, text: "«Мы вчера помыли машину, и сегодня сразу же пошел дождь.»", isSurvivorship: false, explanation: "Это <b>Иллюзия контроля и Ложная корреляция</b>. События совпали случайно, дождь никак не связан с мытьем вашей машины." },
+        { id: 8, text: "«Я проиграл в лотерею 10 раз подряд, значит сегодня шанс выиграть намного выше!»", isSurvivorship: false, explanation: "Это <b>Ошибка игрока</b>. Вероятность выигрыша не имеет «памяти» и не зависит от предыдущих проигрышей." },
+        { id: 9, text: "«Все мои друзья считают так же, как и я. Значит, наша точка зрения единственно верная.»", isSurvivorship: false, explanation: "Это <b>Эффект ложного консенсуса (эхо-камера)</b>. Вы судите о мире по узкой выборке людей, которые изначально на вас похожи." },
+        { id: 10, text: "«Этот препарат 100% натуральный, на травах, поэтому он абсолютно безопасен для организма.»", isSurvivorship: false, explanation: "Это <b>Апелляция к природе</b>. Многие природные вещества (например, бледная поганка или змеиный яд) смертельно опасны." },
+        { id: 11, text: "«Гороскоп предсказал мне удачу, и я действительно нашел на улице 500 рублей.»", isSurvivorship: false, explanation: "Это <b>Эффект Барнума и Склонность к подтверждению</b>. Вы запомнили совпадение, но проигнорировали сотни дней, когда гороскоп не сбывался." },
+        { id: 12, text: "«Увеличение числа вышек 5G совпало с ростом заболеваний, значит вышки опасны.»", isSurvivorship: false, explanation: "Это ложный вывод <b>«После этого — значит по причине этого»</b>. Корреляция не означает причинно-следственную связь." },
+        { id: 13, text: "«Это древний тибетский рецепт медицины, он проверен тысячелетиями и не может ошибаться.»", isSurvivorship: false, explanation: "Это <b>Апелляция к древности</b>. Возраст идеи не делает её верной (в древности лечили кровопусканием и ртутью)." },
+        { id: 14, text: "«Этот экстрасенс берет за прием 50 тысяч рублей, значит он гарантированно поможет.»", isSurvivorship: false, explanation: "Это <b>Искажение восприятия цены</b>. Высокая цена заставляет подсознательно завышать ценность и эффективность пустышки." },
+        { id: 15, text: "«Я прочитал в интернете, что вакцины опасны, там было 100 тысяч лайков, люди врать не будут.»", isSurvivorship: false, explanation: "Это <b>Апелляция к большинству</b>. Количество лайков или верящих людей не делает антинаучный факт истинным." },
+        { id: 16, text: "«У меня болит голова, наверное, это всё из-за сильных магнитных бурь на Солнце.»", isSurvivorship: false, explanation: "Это <b>Склонность к подтверждению</b>. Мы ищем удобную внешнюю причину для недомоганий, игнорируя недосып или стресс." },
+        { id: 17, text: "«Я всегда надеваю эти счастливые носки на экзамен, и ни разу не получал двойку.»", isSurvivorship: false, explanation: "Это <b>Магическое мышление</b>. Ритуалы могут снизить тревожность, но носки никак объективно не влияют на ваши знания." },
+        { id: 18, text: "«Если мы разрешим школьникам не носить форму, завтра они придут на уроки в пижамах.»", isSurvivorship: false, explanation: "Это логическая уловка <b>«Скользкая дорожка»</b>. Необоснованное доведение ситуации до абсурдного и пугающего финала." },
+        { id: 19, text: "«Ученые скрывают правду о плоской Земле, иначе зачем им запрещать полеты в Антарктиду?»", isSurvivorship: false, explanation: "Это <b>Теория заговора</b>. Когда у идеи нет реальных доказательств, придумывается масштабный заговор, который всё «объясняет»." },
+        { id: 20, text: "«Ты либо поддерживаешь гомеопатию, либо ты куплен фармацевтической мафией.»", isSurvivorship: false, explanation: "Это <b>Ложная дихотомия</b>. Искусственное сведение сложной проблемы всего к двум крайним вариантам без полутонов." }
+    ];
     
+    // ОБЩИЕ ФУНКЦИИ
     function showSection(id) {
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
 
+    function returnToStart() {
+        // Сброс Части 1
+        selectedZones.forEach(zoneId => {
+            document.querySelectorAll(`[data-zone="${zoneId}"]`).forEach(el => el.classList.remove('selected'));
+        });
+        selectedZones = [];
+        updateUI1();
+        
+        // Сброс Части 2
+        selectedPhrases = [];
+        currentPhrases = [];
+        document.getElementById('reveal2').style.display = 'none';
+        document.getElementById('btn-submit2').style.display = 'block';
+        document.getElementById('phrases-grid').style.pointerEvents = 'auto';
+
+        showSection('menu');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ЛОГИКА ЧАСТИ 1 (САМОЛЕТЫ)
     function toggleZone(zoneId) {
-        const el = document.getElementById('zone-' + zoneId);
         const index = selectedZones.indexOf(zoneId);
 
         if (index > -1) {
-            // Снимаем выделение
             selectedZones.splice(index, 1);
-            el.classList.remove('selected');
+            document.querySelectorAll(`[data-zone="${zoneId}"]`).forEach(el => el.classList.remove('selected'));
         } else {
-            // Добавляем выделение (максимум 2)
-            if (selectedZones.length < 2) {
+            if (selectedZones.length < 3) {
                 selectedZones.push(zoneId);
-                el.classList.add('selected');
+                document.querySelectorAll(`[data-zone="${zoneId}"]`).forEach(el => el.classList.add('selected'));
             } else {
                 const badge = document.getElementById('zone-counter');
                 badge.style.animation = "shake 0.3s";
                 setTimeout(() => badge.style.animation = "", 300);
             }
         }
-        updateUI();
+        updateUI1();
     }
 
-    function updateUI() {
+    function updateUI1() {
         const counter = document.getElementById('zone-counter');
-        const submitBtn = document.getElementById('btn-submit');
+        const submitBtn = document.getElementById('btn-submit1');
         
-        counter.innerText = `Выбрано: ${selectedZones.length}/2`;
+        counter.innerText = `Выбрано: ${selectedZones.length}/3`;
         
-        if (selectedZones.length === 2) {
+        if (selectedZones.length === 3) {
             counter.classList.add('full');
             submitBtn.disabled = false;
         } else {
@@ -256,13 +361,12 @@
         }
     }
 
-    function checkAnswer() {
-        const titleEl = document.getElementById('reveal-title');
-        const contentEl = document.getElementById('reveal-content');
-        const revealBox = document.getElementById('reveal-content');
+    function checkAnswer1() {
+        const titleEl = document.getElementById('reveal1-title');
+        const contentEl = document.getElementById('reveal1-content');
+        const revealBox = document.getElementById('reveal1-content');
 
-        // Правильный ответ: Кабина и Двигатели (там, где на картинке НЕТ пробоин)
-        const isCorrect = selectedZones.includes('cockpit') && selectedZones.includes('engines');
+        const isCorrect = selectedZones.includes('cockpit') && selectedZones.includes('engines-right') && selectedZones.includes('engines-left');
         
         revealBox.className = 'reveal-box';
 
@@ -271,32 +375,155 @@
             revealBox.classList.add('success');
             contentEl.innerHTML = `
                 <p>Вы разгадали ловушку! Вы поняли, что красные пятна пробоин — это места, повреждение которых <strong>не смертельно</strong>.</p>
-                <p>Самолеты, получившие сотни пуль в крылья и фюзеляж, смогли долететь до базы (как этот на фото). А вот те самолеты, которым снаряд попал в двигатель или кабину пилота, <strong>разбились и не вернулись</strong>. Поэтому на фото там нет пробоин.</p>
+                <p>Самолеты, получившие сотни пуль в крылья и фюзеляж, смогли долететь до базы. А вот те самолеты, которым снаряд попал в двигатель или кабину пилота, <strong>разбились и не вернулись</strong>. Поэтому на фото там нет пробоин.</p>
                 <p>Вы забронировали именно уязвимые, «чистые» места, сохранив тысячи жизней.</p>
             `;
         } else {
             titleEl.innerText = "Провал операции... 💥";
             revealBox.classList.add('fail');
             contentEl.innerHTML = `
-                <p>Вы совершили классическую логическую ошибку. Вы приказали укрепить те места, где больше всего видимых пробоин (крылья, фюзеляж, хвост).</p>
+                <p>Вы совершили классическую логическую ошибку. Вы приказали укрепить те места, где больше всего видимых пробоин.</p>
                 <p>Но посмотрите на фото: этот самолет вернулся на базу изрешеченным. Значит, он <strong>способен летать</strong> с такими повреждениями!</p>
                 <p>А где пробоины у тех самолетов, которые разбились? Правильно, в двигателях и кабине. Самолет с пробитым двигателем просто не долетел до вашего аэродрома. Укрепив места с дырками, вы повесили на самолет бесполезный вес и оставили его уязвимым.</p>
             `;
         }
 
-        showSection('reveal');
+        showSection('reveal1');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function returnToStart() {
-        selectedZones.forEach(zoneId => {
-            document.getElementById('zone-' + zoneId).classList.remove('selected');
-        });
-        selectedZones = [];
-        updateUI();
-        
-        showSection('intro');
+    // ЛОГИКА ЧАСТИ 2 (КАРТОЧКИ)
+    function startPart2() {
+        showSection('game2');
+        renderPhrases();
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderPhrases() {
+        const grid = document.getElementById('phrases-grid');
+        grid.innerHTML = '';
+        selectedPhrases = [];
+        
+        // Берем все 20 фраз, перемешиваем и отрезаем 10
+        let shuffled = [...phrasesData].sort(() => Math.random() - 0.5);
+        currentPhrases = shuffled.slice(0, 10);
+
+        currentPhrases.forEach(phrase => {
+            const card = document.createElement('div');
+            card.className = 'phrase-card';
+            card.id = 'phrase-' + phrase.id;
+            card.innerText = phrase.text;
+            card.onclick = () => togglePhrase(phrase.id);
+            grid.appendChild(card);
+        });
+        updatePhrasesUI();
+    }
+
+    function togglePhrase(id) {
+        const el = document.getElementById('phrase-' + id);
+        const index = selectedPhrases.indexOf(id);
+
+        if (index > -1) {
+            selectedPhrases.splice(index, 1);
+            el.classList.remove('selected');
+        } else {
+            // Ограничения на количество выборов нет, так как игрок не знает точного числа
+            selectedPhrases.push(id);
+            el.classList.add('selected');
+        }
+        updatePhrasesUI();
+    }
+
+    function updatePhrasesUI() {
+        const counter = document.getElementById('phrase-counter');
+        const submitBtn = document.getElementById('btn-submit2');
+        
+        counter.innerText = `Выбрано: ${selectedPhrases.length}`;
+        
+        // Разрешаем проверку, если выбрана хотя бы одна фраза
+        if (selectedPhrases.length > 0) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    function checkPart2() {
+        let correctIdentified = 0; // Нашел правильно
+        let falsePositives = 0;    // Выбрал лишнее
+        let missed = 0;            // Не нашел нужное
+        let totalSurvivorshipInCurrent = 0; // Всего верных среди выданных 10
+
+        // Анализ
+        currentPhrases.forEach(p => {
+            const el = document.getElementById('phrase-' + p.id);
+            const isSelected = selectedPhrases.includes(p.id);
+
+            if (p.isSurvivorship) {
+                totalSurvivorshipInCurrent++;
+                if (isSelected) {
+                    correctIdentified++;
+                    el.classList.add('correct');
+                } else {
+                    missed++;
+                    el.classList.add('correct');
+                    el.style.opacity = '0.5'; // Подсвечиваем то, что игрок пропустил
+                }
+            } else {
+                if (isSelected) {
+                    falsePositives++;
+                    el.classList.add('incorrect');
+                } else {
+                    el.style.opacity = '0.3'; // Затеняем то, что игрок верно проигнорировал
+                }
+            }
+        });
+
+        const titleEl = document.getElementById('reveal2-title');
+        const contentEl = document.getElementById('reveal2-content');
+        const revealBox = document.getElementById('reveal2-content');
+        
+        const isPerfect = (correctIdentified === totalSurvivorshipInCurrent) && (falsePositives === 0);
+
+        revealBox.className = 'reveal-box ' + (isPerfect ? 'success' : 'fail');
+
+        if (isPerfect) {
+            titleEl.innerText = "Идеально! Вы видите мир насквозь 👁️";
+            contentEl.innerHTML = `
+                <p>В этой подборке было спрятано ровно <strong>${totalSurvivorshipInCurrent}</strong> примеров «Ошибки выжившего», и вы нашли их все, не выбрав ничего лишнего!</p>
+                <p>Теперь вас невозможно обмануть историями успеха бросивших школу бизнесменов или рассказами о пользе дедовского самогона.</p>
+                <p>Мы всегда должны спрашивать себя: <strong>«А где те, кому не повезло? Почему мы не слышим их историй?»</strong>. Мертвые не рассказывают сказки, а разбившиеся самолеты не возвращаются на аэродром.</p>
+            `;
+        } else {
+            titleEl.innerText = `Найдено: ${correctIdentified} из ${totalSurvivorshipInCurrent} 🧐`;
+            
+            let falsePosText = '';
+            if (falsePositives > 0) {
+                falsePosText += `<p style="color: #c0392b;">Вы ошибочно выбрали <strong>${falsePositives}</strong> фраз, которые не относятся к этому искажению:</p><ul style="font-size: 0.9em; margin-bottom: 15px;">`;
+                currentPhrases.forEach(p => {
+                    if (!p.isSurvivorship && selectedPhrases.includes(p.id)) {
+                        falsePosText += `<li style="margin-bottom: 12px; background: rgba(231, 76, 60, 0.05); padding: 8px; border-radius: 6px;"><strong>${p.text}</strong><br><span style="color: #c0392b;">Почему это неверно:</span> ${p.explanation}</li>`;
+                    }
+                });
+                falsePosText += `</ul>`;
+            }
+
+            contentEl.innerHTML = `
+                <p>Среди этих 10 случайных утверждений было спрятано <strong>${totalSurvivorshipInCurrent}</strong> примеров «Ошибки выжившего».</p>
+                ${falsePosText}
+                <p><strong>Суть ошибки выжившего:</strong> мы делаем выводы о явлении, ориентируясь только на успешные примеры («выживших»), так как неудачные примеры («погибшие») нам просто не видны.</p>
+                <p>Светло-зеленым цветом подсвечены правильные фразы, которые вы упустили. Прочитайте их еще раз, чтобы понять общий принцип!</p>
+            `;
+        }
+
+        // Блокируем интерфейс
+        document.getElementById('phrases-grid').style.pointerEvents = 'none';
+        document.getElementById('btn-submit2').style.display = 'none';
+
+        setTimeout(() => {
+            document.getElementById('reveal2').style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }, 500); 
     }
 </script>
 
